@@ -6,7 +6,6 @@ import '../../core/utils/calendar_date_helpers.dart';
 import '../../domain/entities/duration_filter.dart';
 import '../../domain/entities/task.dart';
 import '../../domain/entities/task_filter_and_sort.dart';
-import '../../domain/services/task_status_rules.dart';
 
 extension DurationOptionLabel on DurationOption {
   String get label => switch (this) {

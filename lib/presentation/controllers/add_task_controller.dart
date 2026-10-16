@@ -5,25 +5,25 @@ import '../../domain/entities/task.dart';
 import '../../domain/entities/task_draft.dart';
 import '../../domain/entities/team_member.dart';
 import '../../domain/usecases/task_usecases.dart';
-import '../../domain/usecases/team_usecases.dart';
+import '../../domain/repositories/repository_contracts.dart';
 import 'session_controller.dart';
 
 class AddTaskController extends GetxController {
   AddTaskController({
     required CreateTask createTask,
-    required GetTaskTemplates getTaskTemplates,
-    required GetTeamMembers getTeamMembers,
+    required TaskRepository taskRepository,
+    required TeamRepository teamRepository,
     required SessionController session,
     String? initialAssigneeId,
   }) : _createTask = createTask,
-       _getTaskTemplates = getTaskTemplates,
-       _getTeamMembers = getTeamMembers,
+       _taskRepository = taskRepository,
+       _teamRepository = teamRepository,
        _session = session,
        assigneeId = RxnString(initialAssigneeId);
 
   final CreateTask _createTask;
-  final GetTaskTemplates _getTaskTemplates;
-  final GetTeamMembers _getTeamMembers;
+  final TaskRepository _taskRepository;
+  final TeamRepository _teamRepository;
   final SessionController _session;
 
   final isLoadingFormOptions = true.obs;
@@ -52,8 +52,8 @@ class AddTaskController extends GetxController {
     isLoadingFormOptions.value = true;
     formOptionsLoadError.value = null;
     try {
-      teamMembers.assignAll(await _getTeamMembers());
-      taskTemplates.assignAll(await _getTaskTemplates());
+      teamMembers.assignAll(await _teamRepository.getMembers());
+      taskTemplates.assignAll(await _taskRepository.getTaskTemplates());
       if (!teamMembers.any((m) => m.id == assigneeId.value)) {
         assigneeId.value = null;
       }

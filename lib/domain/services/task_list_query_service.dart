@@ -1,15 +1,9 @@
 import '../entities/duration_filter.dart';
 import '../entities/task.dart';
 import '../entities/task_filter_and_sort.dart';
-import 'duration_date_range_resolver.dart';
-import 'task_status_rules.dart';
 
 class TaskListQueryService {
-  const TaskListQueryService({
-    this.dateRangeResolver = const DurationDateRangeResolver(),
-  });
-
-  final DurationDateRangeResolver dateRangeResolver;
+  const TaskListQueryService();
 
   List<Task> selectTasksForMemberAndDuration(
     Iterable<Task> tasks, {
@@ -17,7 +11,7 @@ class TaskListQueryService {
     required DateTime now,
     String? memberId,
   }) {
-    final range = dateRangeResolver.resolveDateRange(duration, now);
+    final range = duration.resolveDateRange(now);
     return tasks
         .where((t) => memberId == null || t.assigneeId == memberId)
         .where((t) => range.contains(t.dateUsedForDurationFilter))

@@ -22,6 +22,51 @@ class TaskDraft {
   final String title;
   final String description;
   final DateTime? dueAt;
+
+  static const int minTitleLength = 3;
+  static const int maxTitleLength = 120;
+  static const int maxDescriptionLength = 500;
+
+  /// Business rules for a new task. Returns an empty map when valid,
+  /// otherwise a message per invalid field.
+  Map<TaskField, String> validate({
+    required Set<String> memberIds,
+    required DateTime now,
+  }) {
+    final errors = <TaskField, String>{};
+
+    final assignee = assigneeId;
+    if (assignee == null || assignee.isEmpty) {
+      errors[TaskField.assignee] = 'Select a team member.';
+    } else if (!memberIds.contains(assignee)) {
+      errors[TaskField.assignee] = 'This team member no longer exists.';
+    }
+
+    final trimmedTitle = title.trim();
+    if (trimmedTitle.isEmpty) {
+      errors[TaskField.title] = 'Enter a task title or pick a template.';
+    } else if (trimmedTitle.length < minTitleLength) {
+      errors[TaskField.title] =
+          'Title must be at least $minTitleLength characters.';
+    } else if (trimmedTitle.length > maxTitleLength) {
+      errors[TaskField.title] =
+          'Title must be $maxTitleLength characters or fewer.';
+    }
+
+    if (description.trim().length > maxDescriptionLength) {
+      errors[TaskField.description] =
+          'Description must be $maxDescriptionLength characters or fewer.';
+    }
+
+    final due = dueAt;
+    if (due == null) {
+      errors[TaskField.dueAt] = 'Select a due date and time.';
+    } else if (!due.isAfter(now)) {
+      errors[TaskField.dueAt] = 'Due date must be in the future.';
+    }
+
+    return errors;
+  }
 }
 
 class TaskValidationException extends AppException {

@@ -7,12 +7,6 @@ abstract final class AppRoutes {
   static const String teamTasks = '/team-tasks';
 }
 
-class TeamPerformanceArgs {
-  const TeamPerformanceArgs({this.duration = DurationFilter.today});
-
-  final DurationFilter duration;
-}
-
 class TeamTasksArgs {
   const TeamTasksArgs({
     this.initialStatusTab = TaskDisplayStatus.open,

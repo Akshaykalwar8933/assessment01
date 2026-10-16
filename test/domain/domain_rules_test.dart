@@ -2,11 +2,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:popaya_assessment/domain/entities/duration_filter.dart';
 import 'package:popaya_assessment/domain/entities/task.dart';
 import 'package:popaya_assessment/domain/entities/task_filter_and_sort.dart';
+import 'package:popaya_assessment/domain/entities/task_stats.dart';
 import 'package:popaya_assessment/domain/entities/team_member.dart';
-import 'package:popaya_assessment/domain/services/duration_date_range_resolver.dart';
-import 'package:popaya_assessment/domain/services/task_stats_calculator.dart';
 import 'package:popaya_assessment/domain/services/task_list_query_service.dart';
-import 'package:popaya_assessment/domain/services/task_status_rules.dart';
 
 // Thursday 16 Oct 2026, 12:00.
 final now = DateTime(2026, 10, 16, 12);
@@ -29,7 +27,7 @@ Task task(
 );
 
 void main() {
-  group('TaskRules', () {
+  group('Task status rules', () {
     test('open task past its due date is overdue', () {
       final t = task('1', due: now.subtract(const Duration(minutes: 1)));
       expect(t.displayStatusAt(now), TaskDisplayStatus.overdue);
@@ -81,10 +79,9 @@ void main() {
     });
   });
 
-  group('DurationResolver', () {
-    const resolver = DurationDateRangeResolver();
+  group('DurationFilter.resolveDateRange', () {
     DateRange r(DurationOption o) =>
-        resolver.resolveDateRange(DurationFilter.preset(o), now);
+        DurationFilter.preset(o).resolveDateRange(now);
 
     test('today', () {
       expect(r(DurationOption.today).start, DateTime(2026, 10, 16));
@@ -117,14 +114,14 @@ void main() {
         DateTime(2026, 10, 10, 18),
         DateTime(2026, 10, 5, 9),
       );
-      final range = resolver.resolveDateRange(f, now);
+      final range = f.resolveDateRange(now);
       expect(range.start, DateTime(2026, 10, 5));
       expect(range.end, DateTime(2026, 10, 11));
       expect(range.contains(DateTime(2026, 10, 10, 23, 59)), isTrue);
     });
   });
 
-  group('TaskQueryService', () {
+  group('TaskListQueryService', () {
     const service = TaskListQueryService();
 
     test('select by member and duration', () {
@@ -212,8 +209,7 @@ void main() {
     });
   });
 
-  group('StatsCalculator', () {
-    const calc = TaskStatsCalculator();
+  group('TaskStats and MemberPerformance', () {
     final tasks = [
       task('1', due: now.add(const Duration(hours: 2))),
       task('2', due: now.subtract(const Duration(days: 2))),
@@ -222,7 +218,7 @@ void main() {
     ];
 
     test('team stats count each task status once', () {
-      final stats = calc.countTasksByStatus(tasks, now);
+      final stats = TaskStats.countByStatus(tasks, now);
       expect(stats.open, 2);
       expect(stats.overdue, 1);
       expect(stats.closed, 1);
@@ -235,11 +231,11 @@ void main() {
         TeamMember(id: 'm2', name: 'B'),
         TeamMember(id: 'm3', name: 'C'),
       ];
-      final perf = calc.calculatePerformancePerMember(members, tasks, now);
+      final perf = MemberPerformance.forEachMember(members, tasks, now);
       expect(perf.map((p) => p.stats.total), [2, 2, 0]);
       expect(
         perf.fold<int>(0, (sum, p) => sum + p.stats.total),
-        calc.countTasksByStatus(tasks, now).total,
+        TaskStats.countByStatus(tasks, now).total,
       );
     });
   });

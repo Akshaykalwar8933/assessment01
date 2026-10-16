@@ -7,20 +7,21 @@ import '../../core/routes/app_routes.dart';
 import '../../domain/entities/duration_filter.dart';
 import '../../domain/entities/task_stats.dart';
 import '../../domain/entities/team_member.dart';
+import '../../domain/repositories/repository_contracts.dart';
 import '../../domain/usecases/task_usecases.dart';
 import 'screen_load_status.dart';
 
 class TeamPerformanceController extends GetxController {
   TeamPerformanceController({
     required GetTeamPerformance getTeamPerformance,
-    required WatchTaskChanges watchTaskChanges,
-    TeamPerformanceArgs args = const TeamPerformanceArgs(),
+    required TaskRepository taskRepository,
+    DurationFilter initialDuration = DurationFilter.today,
   }) : _getTeamPerformance = getTeamPerformance,
-       _watchTaskChanges = watchTaskChanges,
-       selectedDuration = args.duration.obs;
+       _taskRepository = taskRepository,
+       selectedDuration = initialDuration.obs;
 
   final GetTeamPerformance _getTeamPerformance;
-  final WatchTaskChanges _watchTaskChanges;
+  final TaskRepository _taskRepository;
   StreamSubscription<void>? _taskChangesSubscription;
 
   final Rx<DurationFilter> selectedDuration;
@@ -31,7 +32,7 @@ class TeamPerformanceController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _taskChangesSubscription = _watchTaskChanges().listen(
+    _taskChangesSubscription = _taskRepository.watchTaskChanges().listen(
       (_) => loadTeamPerformance(showLoader: false),
     );
     loadTeamPerformance();

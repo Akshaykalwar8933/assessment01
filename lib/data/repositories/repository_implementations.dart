@@ -90,9 +90,6 @@ class MockAuthRepository implements AuthRepository {
       });
 
   @override
-  Future<List<AppUser>> getAvailableUsers() async => MockData.users;
-
-  @override
   Future<AppUser> switchCurrentUser(String userId) =>
       _guard('Could not switch account.', () async {
         final user = MockData.users.where((u) => u.id == userId).firstOrNull;

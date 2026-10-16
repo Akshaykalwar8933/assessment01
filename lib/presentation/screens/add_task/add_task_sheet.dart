@@ -2,45 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../domain/entities/task.dart';
 import '../../../domain/entities/task_draft.dart';
 import '../../../domain/services/clock.dart';
-import '../../../domain/services/task_draft_validator.dart';
 import '../../controllers/add_task_controller.dart';
 import '../../controllers/session_controller.dart';
 import '../../widgets/team_member_avatar.dart';
 import '../../widgets/loading_error_and_message_views.dart';
-
-class AdminOnlyAddTaskButton extends StatelessWidget {
-  const AdminOnlyAddTaskButton({super.key, this.resolveInitialAssigneeId});
-
-  final String? Function()? resolveInitialAssigneeId;
-
-  @override
-  Widget build(BuildContext context) {
-    final session = Get.find<SessionController>();
-    return Obx(
-      () => session.isAdmin
-          ? FloatingActionButton.extended(
-              heroTag: null,
-              tooltip: 'Add and assign a task',
-              onPressed: () => showAddTaskSheet(
-                context,
-                initialAssigneeId: resolveInitialAssigneeId?.call(),
-              ),
-              icon: const Icon(Icons.add_rounded),
-              label: Text(
-                'Add Task',
-                style: AppTextStyles.button.copyWith(color: AppColors.white),
-              ),
-            )
-          : const SizedBox.shrink(),
-    );
-  }
-}
 
 Future<void> showAddTaskSheet(
   BuildContext context, {
@@ -90,8 +60,8 @@ class _AddTaskBottomSheetState extends State<_AddTaskBottomSheet> {
     _controller = Get.put(
       AddTaskController(
         createTask: Get.find(),
-        getTaskTemplates: Get.find(),
-        getTeamMembers: Get.find(),
+        taskRepository: Get.find(),
+        teamRepository: Get.find(),
         session: Get.find(),
         initialAssigneeId: widget.initialAssigneeId,
       ),
@@ -247,7 +217,7 @@ class _AddTaskBottomSheetState extends State<_AddTaskBottomSheet> {
             controller: _titleField,
             enabled: !submitting,
             textCapitalization: TextCapitalization.sentences,
-            maxLength: TaskDraftValidator.maxTitleLength,
+            maxLength: TaskDraft.maxTitleLength,
             style: AppTextStyles.body,
             decoration: InputDecoration(
               hintText: 'e.g. Schedule a site visit',
@@ -263,7 +233,7 @@ class _AddTaskBottomSheetState extends State<_AddTaskBottomSheet> {
             enabled: !submitting,
             minLines: 2,
             maxLines: 4,
-            maxLength: TaskDraftValidator.maxDescriptionLength,
+            maxLength: TaskDraft.maxDescriptionLength,
             textCapitalization: TextCapitalization.sentences,
             style: AppTextStyles.body,
             decoration: InputDecoration(

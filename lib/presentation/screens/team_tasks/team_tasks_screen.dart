@@ -7,12 +7,12 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../domain/entities/duration_filter.dart';
 import '../../../domain/entities/task.dart';
 import '../../controllers/team_tasks_controller.dart';
-import '../../widgets/screen_headers.dart';
-import '../../widgets/buttons_cards_and_toggles.dart';
+import '../../widgets/back_button_title_header.dart';
 import '../../widgets/display_labels.dart';
 import '../../widgets/loading_error_and_message_views.dart';
 import '../../widgets/task_card.dart';
 import '../add_task/add_task_sheet.dart';
+import '../../controllers/session_controller.dart';
 import 'task_filter_sort_and_details_sheets.dart';
 
 class TeamTasksScreen extends GetView<TeamTasksController> {
@@ -24,8 +24,24 @@ class TeamTasksScreen extends GetView<TeamTasksController> {
       length: TaskDisplayStatus.values.length,
       initialIndex: controller.initialStatusTab.index,
       child: Scaffold(
-        floatingActionButton: AdminOnlyAddTaskButton(
-          resolveInitialAssigneeId: () => controller.memberId,
+        // Only admins can create tasks; the sheet re-checks the role.
+        floatingActionButton: Obx(
+          () => Get.find<SessionController>().isAdmin
+              ? FloatingActionButton.extended(
+                  tooltip: 'Add and assign a task',
+                  onPressed: () => showAddTaskSheet(
+                    context,
+                    initialAssigneeId: controller.memberId,
+                  ),
+                  icon: const Icon(Icons.add_rounded),
+                  label: Text(
+                    'Add Task',
+                    style: AppTextStyles.button.copyWith(
+                      color: AppColors.white,
+                    ),
+                  ),
+                )
+              : const SizedBox.shrink(),
         ),
         body: Column(
           children: [
@@ -55,7 +71,7 @@ class TeamTasksScreen extends GetView<TeamTasksController> {
                 children: [
                   Expanded(
                     child: Obx(
-                      () => RoundedPillButton(
+                      () => _RoundedPillButton(
                         icon: Icons.filter_alt_outlined,
                         label: 'Filters',
                         badge: controller.activeFilter.value.activeFilterCount,
@@ -66,7 +82,7 @@ class TeamTasksScreen extends GetView<TeamTasksController> {
                   ),
                   SizedBox(width: 30.w),
                   Expanded(
-                    child: RoundedPillButton(
+                    child: _RoundedPillButton(
                       icon: Icons.unfold_more_rounded,
                       label: 'Sort',
                       onPressed: () => showTaskSortSheet(context, controller),
@@ -175,5 +191,59 @@ class _TaskListForStatusTab extends GetView<TeamTasksController> {
               ),
       );
     });
+  }
+}
+
+class _RoundedPillButton extends StatelessWidget {
+  const _RoundedPillButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+    this.badge = 0,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+  final int badge;
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        foregroundColor: AppColors.black,
+        backgroundColor: AppColors.background,
+        minimumSize: Size(0, 40.h),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+        side: const BorderSide(color: AppColors.border),
+        shape: const StadiumBorder(),
+      ),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 20.r),
+            SizedBox(width: 8.w),
+            Text(label, style: AppTextStyles.button),
+            if (badge > 0) ...[
+              SizedBox(width: 6.w),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 1.h),
+                decoration: BoxDecoration(
+                  color: AppColors.black,
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                child: Text(
+                  '$badge',
+                  style: AppTextStyles.caption.copyWith(color: AppColors.white),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 }

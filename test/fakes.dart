@@ -73,9 +73,6 @@ class InMemoryAuthRepository implements AuthRepository {
   Future<AppUser> getCurrentUser() async => current;
 
   @override
-  Future<List<AppUser>> getAvailableUsers() async => MockData.users;
-
-  @override
   Future<AppUser> switchCurrentUser(String userId) async =>
       current = MockData.users.firstWhere((u) => u.id == userId);
 }

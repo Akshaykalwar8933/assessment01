@@ -8,33 +8,33 @@ import '../../domain/entities/duration_filter.dart';
 import '../../domain/entities/task.dart';
 import '../../domain/entities/task_filter_and_sort.dart';
 import '../../domain/entities/team_member.dart';
+import '../../domain/repositories/repository_contracts.dart';
 import '../../domain/services/clock.dart';
 import '../../domain/usecases/task_usecases.dart';
-import '../../domain/usecases/team_usecases.dart';
 import 'screen_load_status.dart';
 
 class TeamTasksController extends GetxController {
   TeamTasksController({
     required GetFilteredTasksGroupedByStatus getFilteredTasksGroupedByStatus,
-    required GetTeamMembers getTeamMembers,
     required UpdateTaskClosedStatus updateTaskClosedStatus,
+    required TaskRepository taskRepository,
+    required TeamRepository teamRepository,
     required Clock clock,
-    required WatchTaskChanges watchTaskChanges,
     TeamTasksArgs args = const TeamTasksArgs(),
   }) : _getFilteredTasksGroupedByStatus = getFilteredTasksGroupedByStatus,
-       _watchTaskChanges = watchTaskChanges,
+       _taskRepository = taskRepository,
+       _teamRepository = teamRepository,
        _clock = clock,
-       _getTeamMembers = getTeamMembers,
        _updateTaskClosedStatus = updateTaskClosedStatus,
        initialStatusTab = args.initialStatusTab,
        memberId = args.memberId,
        selectedDuration = args.duration.obs;
 
   final GetFilteredTasksGroupedByStatus _getFilteredTasksGroupedByStatus;
-  final GetTeamMembers _getTeamMembers;
   final UpdateTaskClosedStatus _updateTaskClosedStatus;
+  final TaskRepository _taskRepository;
+  final TeamRepository _teamRepository;
   final Clock _clock;
-  final WatchTaskChanges _watchTaskChanges;
   StreamSubscription<void>? _taskChangesSubscription;
 
   final TaskDisplayStatus initialStatusTab;
@@ -54,7 +54,7 @@ class TeamTasksController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _taskChangesSubscription = _watchTaskChanges().listen(
+    _taskChangesSubscription = _taskRepository.watchTaskChanges().listen(
       (_) => loadTasks(showLoader: false),
     );
     loadTasks();
@@ -76,7 +76,7 @@ class TeamTasksController extends GetxController {
     try {
       if (membersById.isEmpty) {
         membersById.assignAll({
-          for (final m in await _getTeamMembers()) m.id: m,
+          for (final m in await _teamRepository.getMembers()) m.id: m,
         });
       }
       final now = _clock.now();

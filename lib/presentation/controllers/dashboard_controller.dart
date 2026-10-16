@@ -10,7 +10,7 @@ import '../../domain/entities/task.dart';
 import '../../domain/entities/task_stats.dart';
 import '../../domain/entities/team_member.dart';
 import '../../domain/usecases/task_usecases.dart';
-import '../../domain/usecases/team_usecases.dart';
+import '../../domain/repositories/repository_contracts.dart';
 import 'session_controller.dart';
 import 'screen_load_status.dart';
 
@@ -18,26 +18,20 @@ enum TaskScope { myTasks, teams }
 
 class DashboardController extends GetxController {
   DashboardController({
-    required GetTeamMembers getTeamMembers,
-    required GetSavedSelectedMemberId getSavedSelectedMemberId,
-    required SaveSelectedMemberId saveSelectedMemberId,
-    required GetPortfolioSummary getPortfolioSummary,
+    required TaskRepository taskRepository,
+    required TeamRepository teamRepository,
+    required PortfolioRepository portfolioRepository,
     required GetTaskCountsByStatus getTaskCountsByStatus,
-    required WatchTaskChanges watchTaskChanges,
     required this.session,
-  }) : _getTeamMembers = getTeamMembers,
-       _watchTaskChanges = watchTaskChanges,
-       _getSavedSelectedMemberId = getSavedSelectedMemberId,
-       _saveSelectedMemberId = saveSelectedMemberId,
-       _getPortfolioSummary = getPortfolioSummary,
+  }) : _taskRepository = taskRepository,
+       _teamRepository = teamRepository,
+       _portfolioRepository = portfolioRepository,
        _getTaskCountsByStatus = getTaskCountsByStatus;
 
-  final GetTeamMembers _getTeamMembers;
-  final GetSavedSelectedMemberId _getSavedSelectedMemberId;
-  final SaveSelectedMemberId _saveSelectedMemberId;
-  final GetPortfolioSummary _getPortfolioSummary;
+  final TaskRepository _taskRepository;
+  final TeamRepository _teamRepository;
+  final PortfolioRepository _portfolioRepository;
   final GetTaskCountsByStatus _getTaskCountsByStatus;
-  final WatchTaskChanges _watchTaskChanges;
   final SessionController session;
 
   StreamSubscription<void>? _taskChangesSubscription;
@@ -61,7 +55,7 @@ class DashboardController extends GetxController {
   void onInit() {
     super.onInit();
     // Any task change (created, closed, reopened) refreshes the counts.
-    _taskChangesSubscription = _watchTaskChanges().listen(
+    _taskChangesSubscription = _taskRepository.watchTaskChanges().listen(
       (_) => refreshTaskCounts(),
     );
     _currentUserChangeWorker = ever(
@@ -81,9 +75,9 @@ class DashboardController extends GetxController {
   Future<void> loadDashboard() async {
     loadStatus.value = ScreenLoadStatus.loading;
     try {
-      final loadedMembers = await _getTeamMembers();
-      final savedId = await _getSavedSelectedMemberId();
-      final summary = await _getPortfolioSummary();
+      final loadedMembers = await _teamRepository.getMembers();
+      final savedId = await _teamRepository.getSelectedMemberId();
+      final summary = await _portfolioRepository.getPortfolioSummary();
       teamMembers.assignAll(loadedMembers);
       final user = session.currentUser.value;
       if (user != null && !user.isAdmin) {
@@ -117,7 +111,7 @@ class DashboardController extends GetxController {
     if (!canSelectMember || member == selectedMember.value) return;
     selectedMember.value = member;
     try {
-      await _saveSelectedMemberId(member.id);
+      await _teamRepository.saveSelectedMemberId(member.id);
     } on AppException catch (e) {
       Get.snackbar('Selection not saved', e.message);
     }
@@ -150,7 +144,7 @@ class DashboardController extends GetxController {
   Future<void> openTeamPerformance() async {
     await Get.toNamed<void>(
       AppRoutes.teamPerformance,
-      arguments: TeamPerformanceArgs(duration: selectedDuration.value),
+      arguments: selectedDuration.value,
     );
   }
 

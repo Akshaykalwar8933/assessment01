@@ -8,21 +8,14 @@ import '../entities/task_filter_and_sort.dart';
 import '../entities/task_stats.dart';
 import '../repositories/repository_contracts.dart';
 import '../services/clock.dart';
-import '../services/task_stats_calculator.dart';
-import '../services/task_draft_validator.dart';
 import '../services/task_list_query_service.dart';
 
+const _taskQuery = TaskListQueryService();
+
 class GetTaskCountsByStatus {
-  const GetTaskCountsByStatus(
-    this._tasks,
-    this._query,
-    this._stats,
-    this._clock,
-  );
+  const GetTaskCountsByStatus(this._tasks, this._clock);
 
   final TaskRepository _tasks;
-  final TaskListQueryService _query;
-  final TaskStatsCalculator _stats;
   final Clock _clock;
 
   Future<TaskStats> call({
@@ -30,49 +23,41 @@ class GetTaskCountsByStatus {
     String? memberId,
   }) async {
     final now = _clock.now();
-    final selected = _query.selectTasksForMemberAndDuration(
+    final selected = _taskQuery.selectTasksForMemberAndDuration(
       await _tasks.getTasks(),
       duration: duration,
       now: now,
       memberId: memberId,
     );
-    return _stats.countTasksByStatus(selected, now);
+    return TaskStats.countByStatus(selected, now);
   }
 }
 
 class GetTeamPerformance {
-  const GetTeamPerformance(
-    this._tasks,
-    this._team,
-    this._query,
-    this._stats,
-    this._clock,
-  );
+  const GetTeamPerformance(this._tasks, this._team, this._clock);
 
   final TaskRepository _tasks;
   final TeamRepository _team;
-  final TaskListQueryService _query;
-  final TaskStatsCalculator _stats;
   final Clock _clock;
 
   Future<List<MemberPerformance>> call(DurationFilter duration) async {
     final now = _clock.now();
     final members = await _team.getMembers();
-    final tasks = await _tasks.getTasks();
-    final selected = _query.selectTasksForMemberAndDuration(
-      tasks,
+    final selected = _taskQuery.selectTasksForMemberAndDuration(
+      await _tasks.getTasks(),
       duration: duration,
       now: now,
     );
-    return _stats.calculatePerformancePerMember(members, selected, now);
+    return MemberPerformance.forEachMember(members, selected, now);
   }
 }
 
+/// Tasks for the Team's Task screen, already filtered, sorted and grouped.
+/// Pass [now] to keep grouping consistent with labels computed by the caller.
 class GetFilteredTasksGroupedByStatus {
-  const GetFilteredTasksGroupedByStatus(this._tasks, this._query, this._clock);
+  const GetFilteredTasksGroupedByStatus(this._tasks, this._clock);
 
   final TaskRepository _tasks;
-  final TaskListQueryService _query;
   final Clock _clock;
 
   Future<Map<TaskDisplayStatus, List<Task>>> call({
@@ -83,17 +68,17 @@ class GetFilteredTasksGroupedByStatus {
     DateTime? now,
   }) async {
     now ??= _clock.now();
-    final selected = _query.selectTasksForMemberAndDuration(
+    final selected = _taskQuery.selectTasksForMemberAndDuration(
       await _tasks.getTasks(),
       duration: duration,
       now: now,
       memberId: memberId,
     );
-    final sorted = _query.sortTasks(
-      _query.applyTaskFilter(selected, filter),
+    final sorted = _taskQuery.sortTasks(
+      _taskQuery.applyTaskFilter(selected, filter),
       sort,
     );
-    return _query.groupTasksByDisplayStatus(sorted, now);
+    return _taskQuery.groupTasksByDisplayStatus(sorted, now);
   }
 }
 
@@ -111,38 +96,18 @@ class UpdateTaskClosedStatus {
   }
 }
 
-class GetTaskTemplates {
-  const GetTaskTemplates(this._tasks);
-
-  final TaskRepository _tasks;
-
-  Future<List<TaskTemplate>> call() => _tasks.getTaskTemplates();
-}
-
-class WatchTaskChanges {
-  const WatchTaskChanges(this._tasks);
-
-  final TaskRepository _tasks;
-
-  Stream<void> call() => _tasks.watchTaskChanges();
-}
-
+/// Admin-only: validates a draft and persists it as a new open task.
+///
+/// Throws [PermissionDeniedException] for non-admins and
+/// [TaskValidationException] for invalid input.
 class CreateTask {
-  CreateTask(
-    this._tasks,
-    this._team,
-    this._auth,
-    this._clock, {
-    TaskDraftValidator validator = const TaskDraftValidator(),
-    Random? random,
-  }) : _validator = validator,
-       _random = random ?? Random();
+  CreateTask(this._tasks, this._team, this._auth, this._clock, {Random? random})
+    : _random = random ?? Random();
 
   final TaskRepository _tasks;
   final TeamRepository _team;
   final AuthRepository _auth;
   final Clock _clock;
-  final TaskDraftValidator _validator;
   final Random _random;
 
   Future<Task> call(TaskDraft draft) async {
@@ -155,8 +120,7 @@ class CreateTask {
 
     final now = _clock.now();
     final members = await _team.getMembers();
-    final errors = _validator.validateDraft(
-      draft,
+    final errors = draft.validate(
       memberIds: {for (final m in members) m.id},
       now: now,
     );
