@@ -1,10 +1,8 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../domain/entities/task_stats.dart';
@@ -54,7 +52,12 @@ class TeamPerformanceScreen extends GetView<TeamPerformanceController> {
                       controller.loadTeamPerformance(showLoader: false),
                   child: ListView.separated(
                     physics: const AlwaysScrollableScrollPhysics(),
-                    padding: EdgeInsets.fromLTRB(gutter, 12.h, gutter, 32.h),
+                    padding: EdgeInsets.fromLTRB(
+                      gutter,
+                      12.h,
+                      gutter,
+                      32.h + MediaQuery.paddingOf(context).bottom,
+                    ),
                     itemCount: items.length,
                     separatorBuilder: (_, _) => SizedBox(height: 28.h),
                     itemBuilder: (_, i) => _MemberPerformanceCard(

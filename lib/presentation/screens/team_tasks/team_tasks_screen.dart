@@ -171,7 +171,12 @@ class _TaskListForStatusTab extends GetView<TeamTasksController> {
               )
             : ListView.separated(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 96.h),
+                padding: EdgeInsets.fromLTRB(
+                  16.w,
+                  12.h,
+                  16.w,
+                  96.h + MediaQuery.paddingOf(context).bottom,
+                ),
                 itemCount: tasks.length,
                 separatorBuilder: (_, _) => SizedBox(height: 24.h),
                 itemBuilder: (context, i) {

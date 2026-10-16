@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import '../../../core/error/error_reporting.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../domain/entities/task.dart';
@@ -18,7 +19,10 @@ Future<void> showAddTaskSheet(
 }) async {
   final session = Get.find<SessionController>();
   if (!session.isAdmin) {
-    Get.snackbar('Not allowed', 'Only admins can create and assign tasks.');
+    showErrorSnackbar(
+      'Only admins can create and assign tasks.',
+      title: 'Not allowed',
+    );
     return;
   }
   final created = await showModalBottomSheet<Task>(
@@ -28,13 +32,9 @@ Future<void> showAddTaskSheet(
     builder: (_) => _AddTaskBottomSheet(initialAssigneeId: initialAssigneeId),
   );
   if (created != null) {
-    Get.snackbar(
-      'Task added',
+    showSuccessSnackbar(
       '“${created.title}” has been assigned.',
-      snackPosition: SnackPosition.BOTTOM,
-      margin: EdgeInsets.all(16.r),
-      backgroundColor: AppColors.black,
-      colorText: AppColors.white,
+      title: 'Task added',
     );
   }
 }

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:get/get.dart';
 
-import '../../core/error/app_exception.dart';
+import '../../core/error/error_reporting.dart';
 import '../../core/routes/app_routes.dart';
 import '../../domain/entities/duration_filter.dart';
 import '../../domain/entities/task.dart';
@@ -91,8 +91,8 @@ class TeamTasksController extends GetxController {
       );
       tasksLoadedAt.value = now;
       loadStatus.value = ScreenLoadStatus.success;
-    } on AppException catch (e) {
-      errorMessage.value = e.message;
+    } catch (error, stackTrace) {
+      errorMessage.value = userFacingMessageFor(error, stackTrace);
       loadStatus.value = ScreenLoadStatus.error;
     }
   }
@@ -121,8 +121,11 @@ class TeamTasksController extends GetxController {
     try {
       // The task-change stream refreshes the lists.
       await _updateTaskClosedStatus(task, closed: closed);
-    } on AppException catch (e) {
-      Get.snackbar('Update failed', e.message);
+    } catch (error, stackTrace) {
+      showErrorSnackbar(
+        userFacingMessageFor(error, stackTrace),
+        title: 'Update failed',
+      );
     }
   }
 }

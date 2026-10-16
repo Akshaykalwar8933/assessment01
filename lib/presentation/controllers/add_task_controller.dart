@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 
-import '../../core/error/app_exception.dart';
+import '../../core/error/error_reporting.dart';
 import '../../domain/entities/task.dart';
 import '../../domain/entities/task_draft.dart';
 import '../../domain/entities/team_member.dart';
@@ -57,8 +57,8 @@ class AddTaskController extends GetxController {
       if (!teamMembers.any((m) => m.id == assigneeId.value)) {
         assigneeId.value = null;
       }
-    } on AppException catch (e) {
-      formOptionsLoadError.value = e.message;
+    } catch (error, stackTrace) {
+      formOptionsLoadError.value = userFacingMessageFor(error, stackTrace);
     } finally {
       isLoadingFormOptions.value = false;
     }
@@ -113,8 +113,9 @@ class AddTaskController extends GetxController {
       return task;
     } on TaskValidationException catch (e) {
       fieldErrors.assignAll(e.errors);
-    } on AppException catch (e) {
-      submitError.value = e.message;
+    } catch (error, stackTrace) {
+      // Storage or permission failure: keep the sheet open and explain why.
+      submitError.value = userFacingMessageFor(error, stackTrace);
     } finally {
       isSubmitting.value = false;
     }

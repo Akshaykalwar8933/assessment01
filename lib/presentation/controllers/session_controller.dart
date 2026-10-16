@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 
 import '../../core/error/app_exception.dart';
+import '../../core/error/error_reporting.dart';
 import '../../domain/entities/app_user.dart';
 import '../../domain/repositories/repository_contracts.dart';
 
@@ -22,8 +23,11 @@ class SessionController extends GetxController {
   Future<void> loadCurrentUser() async {
     try {
       currentUser.value = await _auth.getCurrentUser();
-    } on AppException catch (e) {
-      Get.snackbar('Account', e.message);
+    } catch (error, stackTrace) {
+      showErrorSnackbar(
+        userFacingMessageFor(error, stackTrace),
+        title: 'Account',
+      );
     }
   }
 
@@ -39,8 +43,11 @@ class SessionController extends GetxController {
     if (user.id == currentUser.value?.id) return;
     try {
       currentUser.value = await _auth.switchCurrentUser(user.id);
-    } on AppException catch (e) {
-      Get.snackbar('Account', e.message);
+    } catch (error, stackTrace) {
+      showErrorSnackbar(
+        userFacingMessageFor(error, stackTrace),
+        title: 'Account',
+      );
     }
   }
 }

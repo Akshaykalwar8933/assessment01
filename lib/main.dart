@@ -1,19 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 
 import 'core/di/injection.dart';
+import 'core/error/error_reporting.dart';
 import 'core/routes/app_pages.dart';
+import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  installGlobalErrorHandlers();
+  // Draw behind transparent status and navigation bars (required on
+  // Android 15+); screens add their own safe-area padding.
+  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  SystemChrome.setSystemUIOverlayStyle(AppTheme.systemBarsStyle);
+  await _startApp();
+}
+
+Future<void> _startApp() async {
   try {
     await Hive.initFlutter();
     await initAppDependencies();
-  } catch (error) {
-    runApp(StartupErrorApp(error: error));
+  } catch (error, stackTrace) {
+    logError(error, stackTrace);
+    runApp(const StartupErrorApp(onRetry: _startApp));
     return;
   }
   runApp(const ResideApp());
@@ -37,27 +50,68 @@ class ResideApp extends StatelessWidget {
         initialRoute: initialRoute,
         getPages: AppPages.routes,
         defaultTransition: Transition.cupertino,
+        // Dark status / navigation icons on every screen (the headers are
+        // not AppBars, so nothing else sets this).
+        builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
+          value: AppTheme.systemBarsStyle,
+          child: child ?? const SizedBox.shrink(),
+        ),
       ),
     );
   }
 }
 
+/// Shown when local storage cannot be opened at launch.
 class StartupErrorApp extends StatelessWidget {
-  const StartupErrorApp({super.key, required this.error});
+  const StartupErrorApp({super.key, required this.onRetry});
 
-  final Object error;
+  final Future<void> Function() onRetry;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Text(
-              'Could not start the app.\n\n$error',
-              textAlign: TextAlign.center,
+      theme: AppTheme.light,
+      home: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: AppTheme.systemBarsStyle,
+        child: Scaffold(
+          body: SafeArea(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.error_outline_rounded,
+                      size: 48,
+                      color: AppColors.textMuted,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Could not start the app',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Your saved data could not be opened. '
+                      'Please try again.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: AppColors.textSecondary),
+                    ),
+                    const SizedBox(height: 20),
+                    OutlinedButton(
+                      onPressed: onRetry,
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),

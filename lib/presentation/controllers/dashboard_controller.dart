@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:get/get.dart';
 
-import '../../core/error/app_exception.dart';
+import '../../core/error/error_reporting.dart';
 import '../../core/routes/app_routes.dart';
 import '../../domain/entities/duration_filter.dart';
 import '../../domain/entities/portfolio_summary.dart';
@@ -94,16 +94,16 @@ class DashboardController extends GetxController {
       portfolioSummary.value = summary;
       taskCounts.value = await _fetchTaskCounts();
       loadStatus.value = ScreenLoadStatus.success;
-    } on AppException catch (e) {
-      _showLoadError(e);
+    } catch (error, stackTrace) {
+      _showLoadError(userFacingMessageFor(error, stackTrace));
     }
   }
 
   Future<void> refreshTaskCounts() async {
     try {
       taskCounts.value = await _fetchTaskCounts();
-    } on AppException catch (e) {
-      _showLoadError(e);
+    } catch (error, stackTrace) {
+      _showLoadError(userFacingMessageFor(error, stackTrace));
     }
   }
 
@@ -112,8 +112,11 @@ class DashboardController extends GetxController {
     selectedMember.value = member;
     try {
       await _teamRepository.saveSelectedMemberId(member.id);
-    } on AppException catch (e) {
-      Get.snackbar('Selection not saved', e.message);
+    } catch (error, stackTrace) {
+      showErrorSnackbar(
+        userFacingMessageFor(error, stackTrace),
+        title: 'Selection not saved',
+      );
     }
     if (taskScope.value == TaskScope.myTasks) await refreshTaskCounts();
   }
@@ -153,8 +156,8 @@ class DashboardController extends GetxController {
     memberId: _memberIdForSelectedScope,
   );
 
-  void _showLoadError(AppException error) {
-    errorMessage.value = error.message;
+  void _showLoadError(String message) {
+    errorMessage.value = message;
     loadStatus.value = ScreenLoadStatus.error;
   }
 }

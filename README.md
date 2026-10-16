@@ -84,6 +84,20 @@ An **Add Task** button appears on the Dashboard and on Team's Task, **only for t
   - in the `CreateTask` use case.
 - There is no switch-account button in the UI. The current user changes through `SessionController.switchToUser`, which the tests use. A real sign-in screen can call it later.
 
+### Error handling
+- **Screens never get stuck loading.** Every controller catches *any* error, not only expected ones, and shows the error screen with **Retry**.
+- **Messages are friendly.** Expected failures show their own message, such as "Could not save the task." Unexpected ones show "Something went wrong. Please try again." and are logged. Error messages use one red snackbar style, and the same message is not stacked repeatedly.
+- **No grey or red screens.** A widget that fails to build shows "This section could not be displayed." while the rest of the screen keeps working. In debug builds the cause is also shown.
+- **Uncaught async errors** (futures, streams) are caught app-wide and shown as a snackbar instead of crashing.
+- **Startup failure:** if local storage can't be opened at launch, a friendly screen with **Retry** appears instead of a blank app.
+- See `lib/core/error/error_reporting.dart`.
+
+### System bars and safe areas
+- Edge-to-edge on Android (enforced on Android 15+) and iOS. The status and navigation bars are transparent with dark icons, and there is no grey scrim.
+- Headers sit below the status bar, the notch and the Dynamic Island.
+- Lists, the Add Task button and every bottom sheet's buttons stay above the gesture bar or the 3-button navigation bar.
+- The app has a light design only. Android night themes and iOS (`UIUserInterfaceStyle = Light`) stay light, so dark mode causes no black flashes or black strips.
+
 ### General
 - Loading, empty and error states (with **Retry**) on every screen, plus pull-to-refresh on every list.
 - **Responsive layout:** `flutter_screenutil` scaling from the 414 × 870 design, plus `Expanded`, `Flexible`, `FittedBox` and scrolling. Tests check for overflow at **320×568, 414×870 and 480×1000**.
@@ -226,6 +240,7 @@ Run them with `flutter test`.
 | `test/domain/` | The overdue rule, every duration option, filtering, sorting (including tasks with no due date), task counts, per-member performance adding up to team totals |
 | `test/domain/create_task_test.dart` | Admin-only creation, unique IDs, trimming, the change notification, every validation rule |
 | `test/data/` | Hive seeding once; tasks, descriptions, the member selection and the current user surviving a simulated restart; the change stream; valid mock data |
+| `test/presentation/error_handling_and_system_ui_test.dart` | Unexpected errors show the error screen (not a spinner) and snackbars, the build-error fallback, uncaught async errors, transparent system bars with dark icons, headers below the status bar, lists and buttons clearing a navigation bar |
 | `test/presentation/` | Every screen without overflow at three phone sizes, counts matching the data, tap-through to the right tab, closing a task, saving the member selection, error and retry, Add Task hidden and refused for team members, validation then creating a task and updating counts, the sheet staying open when saving fails |
 
 The widget tests use in-memory repositories, a fixed clock and the real Montserrat font.

@@ -1,9 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'app_colors.dart';
 import 'app_text_styles.dart';
 
 abstract final class AppTheme {
+  /// Transparent, edge-to-edge system bars with dark icons for the app's light
+  /// UI. Contrast enforcement is off so Android adds no grey scrim behind the
+  /// navigation bar.
+  static const SystemUiOverlayStyle systemBarsStyle = SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.dark, // Android
+    statusBarBrightness: Brightness.light, // iOS (dark content)
+    systemStatusBarContrastEnforced: false,
+    systemNavigationBarColor: Colors.transparent,
+    systemNavigationBarDividerColor: Colors.transparent,
+    systemNavigationBarIconBrightness: Brightness.dark,
+    systemNavigationBarContrastEnforced: false,
+  );
+
   static ThemeData get light {
     final base = ThemeData(
       useMaterial3: true,
@@ -29,6 +44,7 @@ abstract final class AppTheme {
         foregroundColor: AppColors.black,
         elevation: 0,
         scrolledUnderElevation: 0,
+        systemOverlayStyle: systemBarsStyle,
       ),
       bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: AppColors.white,

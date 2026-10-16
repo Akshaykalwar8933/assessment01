@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:get/get.dart';
 
-import '../../core/error/app_exception.dart';
+import '../../core/error/error_reporting.dart';
 import '../../core/routes/app_routes.dart';
 import '../../domain/entities/duration_filter.dart';
 import '../../domain/entities/task_stats.dart';
@@ -51,8 +51,8 @@ class TeamPerformanceController extends GetxController {
         await _getTeamPerformance(selectedDuration.value),
       );
       loadStatus.value = ScreenLoadStatus.success;
-    } on AppException catch (e) {
-      errorMessage.value = e.message;
+    } catch (error, stackTrace) {
+      errorMessage.value = userFacingMessageFor(error, stackTrace);
       loadStatus.value = ScreenLoadStatus.error;
     }
   }

@@ -28,17 +28,22 @@ class InMemoryTaskRepository implements TaskRepository {
   bool fail = false;
   bool failSave = false;
 
+  /// Simulates a bug (not an [AppException]), e.g. corrupt data.
+  bool throwUnexpectedError = false;
+
   List<Task> get all => _tasks.values.toList();
 
   @override
   Future<List<Task>> getTasks() async {
     if (fail) throw const AppException('Could not load tasks.');
+    if (throwUnexpectedError) throw StateError('corrupt task record');
     return _tasks.values.toList();
   }
 
   @override
   Future<void> saveTask(Task task) async {
     if (failSave) throw const AppException('Could not save the task.');
+    if (throwUnexpectedError) throw StateError('disk full');
     _tasks[task.id] = task;
     _changes.add(null);
   }

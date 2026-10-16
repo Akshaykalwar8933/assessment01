@@ -68,7 +68,12 @@ class _DashboardScrollableContent extends StatelessWidget {
     final gutter = 16.w;
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: EdgeInsets.fromLTRB(gutter, 24.h, gutter, 96.h),
+      padding: EdgeInsets.fromLTRB(
+        gutter,
+        24.h,
+        gutter,
+        96.h + MediaQuery.paddingOf(context).bottom,
+      ),
       children: [
         Row(
           children: [
