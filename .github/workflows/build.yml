@@ -46,10 +46,6 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
-      # 5. Run Code Generation (Hive CE / Build Runner)
-      - name: Run Build Runner
-        run: dart run build_runner build --delete-conflicting-outputs
-
       # 6. Build Android APK (Release)
       - name: Build APK
         run: flutter build apk --release --no-tree-shake-icons
