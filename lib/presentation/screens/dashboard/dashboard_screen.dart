@@ -18,6 +18,7 @@ class DashboardScreen extends GetView<DashboardController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+
       floatingActionButton: Obx(
         () => controller.session.isAdmin
             ? FloatingActionButton.extended(
@@ -37,6 +38,7 @@ class DashboardScreen extends GetView<DashboardController> {
               )
             : const SizedBox.shrink(),
       ),
+
       body: Column(
         children: [
           const _ResideLogoHeader(),

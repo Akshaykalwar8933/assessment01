@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-
 import '../../presentation/bindings/bindings.dart';
 import '../../presentation/screens/dashboard/dashboard_screen.dart';
 import '../../presentation/screens/team_performance/team_performance_screen.dart';

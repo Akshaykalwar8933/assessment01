@@ -51,7 +51,7 @@ It is built with **Flutter 3.41.4**, **GetX** and **Hive**, following **Clean Ar
 - Tap a task to see its details, then **Mark as closed** or **Reopen** it.
 
 ### Add Task (admins only)
-An **Add Task** button appears on the Dashboard and on Team's Task, **only for the Admin role**. It opens a bottom sheet with these fields:
+An **Add Task** button appears **only on the Dashboard**, and **only for the Admin role**. It opens a bottom sheet with these fields:
 
 | Field | Required | Rules |
 |---|---|---|

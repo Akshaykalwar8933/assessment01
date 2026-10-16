@@ -5,9 +5,8 @@ import 'package:get/get.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 
-/// White top bar with a back button and the screen title.
-class BackButtonTitleHeader extends StatelessWidget {
-  const BackButtonTitleHeader({super.key, required this.title});
+class CommonAppBar extends StatelessWidget {
+  const CommonAppBar({super.key, required this.title});
 
   final String title;
 

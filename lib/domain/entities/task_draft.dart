@@ -27,8 +27,6 @@ class TaskDraft {
   static const int maxTitleLength = 120;
   static const int maxDescriptionLength = 500;
 
-  /// Business rules for a new task. Returns an empty map when valid,
-  /// otherwise a message per invalid field.
   Map<TaskField, String> validate({
     required Set<String> memberIds,
     required DateTime now,

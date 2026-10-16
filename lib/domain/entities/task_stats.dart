@@ -4,7 +4,6 @@ import 'team_member.dart';
 class TaskStats {
   const TaskStats({this.open = 0, this.overdue = 0, this.closed = 0});
 
-  /// Counts [tasks] per display status (each task in exactly one status).
   factory TaskStats.countByStatus(Iterable<Task> tasks, DateTime now) {
     var open = 0, overdue = 0, closed = 0;
     for (final t in tasks) {
@@ -49,7 +48,6 @@ class MemberPerformance {
   final TeamMember member;
   final TaskStats stats;
 
-  /// One entry per member, in member order, including members with no tasks.
   static List<MemberPerformance> forEachMember(
     List<TeamMember> members,
     Iterable<Task> tasks,

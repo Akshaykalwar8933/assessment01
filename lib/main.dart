@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
-
 import 'core/di/injection.dart';
 import 'core/error/error_reporting.dart';
 import 'core/routes/app_pages.dart';
@@ -13,8 +12,6 @@ import 'core/theme/app_theme.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   installGlobalErrorHandlers();
-  // Draw behind transparent status and navigation bars (required on
-  // Android 15+); screens add their own safe-area padding.
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   SystemChrome.setSystemUIOverlayStyle(AppTheme.systemBarsStyle);
   await _startApp();
@@ -29,11 +26,11 @@ Future<void> _startApp() async {
     runApp(const StartupErrorApp(onRetry: _startApp));
     return;
   }
-  runApp(const ResideApp());
+  runApp(const MyApp());
 }
 
-class ResideApp extends StatelessWidget {
-  const ResideApp({super.key, this.initialRoute = AppPages.initial});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key, this.initialRoute = AppPages.initial});
 
   final String initialRoute;
 
@@ -44,14 +41,12 @@ class ResideApp extends StatelessWidget {
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (_, _) => GetMaterialApp(
-        title: 'Reside',
+        title: 'MyApp',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
         initialRoute: initialRoute,
         getPages: AppPages.routes,
         defaultTransition: Transition.cupertino,
-        // Dark status / navigation icons on every screen (the headers are
-        // not AppBars, so nothing else sets this).
         builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
           value: AppTheme.systemBarsStyle,
           child: child ?? const SizedBox.shrink(),
@@ -61,12 +56,9 @@ class ResideApp extends StatelessWidget {
   }
 }
 
-/// Shown when local storage cannot be opened at launch.
 class StartupErrorApp extends StatelessWidget {
   const StartupErrorApp({super.key, required this.onRetry});
-
   final Future<void> Function() onRetry;
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

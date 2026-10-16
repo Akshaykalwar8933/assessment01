@@ -50,7 +50,7 @@ void main() {
       );
     }
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(const ResideApp());
+    await tester.pumpWidget(const MyApp());
     await tester.pumpAndSettle();
   }
 

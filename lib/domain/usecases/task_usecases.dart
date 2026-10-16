@@ -52,8 +52,6 @@ class GetTeamPerformance {
   }
 }
 
-/// Tasks for the Team's Task screen, already filtered, sorted and grouped.
-/// Pass [now] to keep grouping consistent with labels computed by the caller.
 class GetFilteredTasksGroupedByStatus {
   const GetFilteredTasksGroupedByStatus(this._tasks, this._clock);
 
@@ -96,10 +94,6 @@ class UpdateTaskClosedStatus {
   }
 }
 
-/// Admin-only: validates a draft and persists it as a new open task.
-///
-/// Throws [PermissionDeniedException] for non-admins and
-/// [TaskValidationException] for invalid input.
 class CreateTask {
   CreateTask(this._tasks, this._team, this._auth, this._clock, {Random? random})
     : _random = random ?? Random();

@@ -17,6 +17,5 @@ class TeamTasksArgs {
   final TaskDisplayStatus initialStatusTab;
   final DurationFilter duration;
 
-  /// Restricts the list to one member; null shows the whole team.
   final String? memberId;
 }

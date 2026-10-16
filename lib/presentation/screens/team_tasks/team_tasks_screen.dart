@@ -7,12 +7,10 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../domain/entities/duration_filter.dart';
 import '../../../domain/entities/task.dart';
 import '../../controllers/team_tasks_controller.dart';
-import '../../widgets/back_button_title_header.dart';
+import '../../widgets/common_app_bar.dart';
 import '../../widgets/display_labels.dart';
 import '../../widgets/loading_error_and_message_views.dart';
 import '../../widgets/task_card.dart';
-import '../add_task/add_task_sheet.dart';
-import '../../controllers/session_controller.dart';
 import 'task_filter_sort_and_details_sheets.dart';
 
 class TeamTasksScreen extends GetView<TeamTasksController> {
@@ -24,28 +22,9 @@ class TeamTasksScreen extends GetView<TeamTasksController> {
       length: TaskDisplayStatus.values.length,
       initialIndex: controller.initialStatusTab.index,
       child: Scaffold(
-        // Only admins can create tasks; the sheet re-checks the role.
-        floatingActionButton: Obx(
-          () => Get.find<SessionController>().isAdmin
-              ? FloatingActionButton.extended(
-                  tooltip: 'Add and assign a task',
-                  onPressed: () => showAddTaskSheet(
-                    context,
-                    initialAssigneeId: controller.memberId,
-                  ),
-                  icon: const Icon(Icons.add_rounded),
-                  label: Text(
-                    'Add Task',
-                    style: AppTextStyles.button.copyWith(
-                      color: AppColors.white,
-                    ),
-                  ),
-                )
-              : const SizedBox.shrink(),
-        ),
         body: Column(
           children: [
-            const BackButtonTitleHeader(title: 'Team’s Task'),
+            const CommonAppBar(title: 'Team’s Task'),
             Material(
               color: AppColors.background,
               child: TabBar(
@@ -175,7 +154,7 @@ class _TaskListForStatusTab extends GetView<TeamTasksController> {
                   16.w,
                   12.h,
                   16.w,
-                  96.h + MediaQuery.paddingOf(context).bottom,
+                  24.h + MediaQuery.paddingOf(context).bottom,
                 ),
                 itemCount: tasks.length,
                 separatorBuilder: (_, _) => SizedBox(height: 24.h),

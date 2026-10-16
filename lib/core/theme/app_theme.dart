@@ -4,10 +4,8 @@ import 'package:flutter/services.dart';
 import 'app_colors.dart';
 import 'app_text_styles.dart';
 
-abstract final class AppTheme {
-  /// Transparent, edge-to-edge system bars with dark icons for the app's light
-  /// UI. Contrast enforcement is off so Android adds no grey scrim behind the
-  /// navigation bar.
+ class AppTheme {
+
   static const SystemUiOverlayStyle systemBarsStyle = SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.dark, // Android

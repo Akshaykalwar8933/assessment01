@@ -40,7 +40,7 @@ void main() {
     tester.view.devicePixelRatio = 3;
     tester.view.physicalSize = size * 3;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(const ResideApp());
+    await tester.pumpWidget(const MyApp());
     await tester.pumpAndSettle();
   }
 
@@ -195,14 +195,21 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('admin sees the button on Dashboard and Team’s Task', (
-      tester,
-    ) async {
+    testWidgets('the button shows only on the Dashboard', (tester) async {
       await pumpApp(tester, const Size(414, 870));
       expect(find.byType(FloatingActionButton), findsOneWidget);
+
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
+      expect(find.byType(FloatingActionButton), findsNothing);
+
+      Get.back();
+      await tester.pumpAndSettle();
       expect(find.byType(FloatingActionButton), findsOneWidget);
+
+      await tester.tap(find.text('VIEW TEAM PERFORMANCE'));
+      await tester.pumpAndSettle();
+      expect(find.byType(FloatingActionButton), findsNothing);
     });
 
     testWidgets('validates, then creates an open task and updates counts', (

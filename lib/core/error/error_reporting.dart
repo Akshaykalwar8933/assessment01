@@ -1,22 +1,14 @@
 import 'dart:developer' as developer;
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
-
 import '../theme/app_colors.dart';
 import 'app_exception.dart';
 
-/// How errors reach the user: snackbars, a fallback for widgets that fail to
-/// build (instead of Flutter's grey box in release mode), and app-wide
-/// handlers for errors nothing else caught.
 
 const String genericErrorMessage = 'Something went wrong. Please try again.';
 
-/// Logs [error] and returns a message that is safe to show to users.
-/// [AppException]s carry their own message; anything else is unexpected and
-/// gets a generic one.
 String userFacingMessageFor(Object error, [StackTrace? stackTrace]) {
   if (error is AppException) return error.message;
   logError(error, stackTrace);
@@ -35,8 +27,6 @@ void logError(Object error, [StackTrace? stackTrace]) {
 String? _lastSnackbarKey;
 DateTime _lastSnackbarAt = DateTime.fromMillisecondsSinceEpoch(0);
 
-/// Red error snackbar. The same title and message within 3 seconds is shown
-/// once, so a burst of identical failures does not stack snackbars.
 void showErrorSnackbar(String message, {String title = 'Error'}) {
   final now = DateTime.now();
   final key = '$title|$message';
@@ -95,29 +85,22 @@ void _showSnackbar({
   }
 }
 
-/// Installs app-wide handlers. Call once in `main()` before `runApp`.
 void installGlobalErrorHandlers() {
-  // A widget that throws while building shows this instead of a grey box.
   ErrorWidget.builder = (details) => BuildErrorFallback(details: details);
 
-  // Errors reported by the framework (build, layout, gestures).
   FlutterError.onError = (details) {
     FlutterError.presentError(details);
     logError(details.exception, details.stack);
   };
 
-  // Uncaught errors from async code (futures, streams, timers).
   PlatformDispatcher.instance.onError = handleUncaughtError;
 }
 
-/// Returns true so the error counts as handled and the app keeps running.
 bool handleUncaughtError(Object error, StackTrace stackTrace) {
   showErrorSnackbar(userFacingMessageFor(error, stackTrace));
   return true;
 }
 
-/// Shown in place of a widget that failed to build. Self-contained (no
-/// ScreenUtil or theme lookups) because it may render anywhere in the tree.
 class BuildErrorFallback extends StatelessWidget {
   const BuildErrorFallback({super.key, required this.details});
 
@@ -150,7 +133,6 @@ class BuildErrorFallback extends StatelessWidget {
                     color: AppColors.textSecondary,
                   ),
                 ),
-                // Developers still see the cause in debug builds.
                 if (kDebugMode) ...[
                   const SizedBox(height: 8),
                   Text(

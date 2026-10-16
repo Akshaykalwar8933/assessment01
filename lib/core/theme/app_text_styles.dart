@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'app_colors.dart';
 
-abstract final class AppTextStyles {
+class AppTextStyles {
   static const String fontFamily = 'Montserrat';
 
   static TextStyle _base(double size, FontWeight weight, Color color) =>

@@ -7,7 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../domain/entities/task_stats.dart';
 import '../../controllers/team_performance_controller.dart';
-import '../../widgets/back_button_title_header.dart';
+import '../../widgets/common_app_bar.dart';
 import '../../widgets/duration_filter_dropdown.dart';
 import '../../widgets/team_member_avatar.dart';
 import '../../widgets/loading_error_and_message_views.dart';
@@ -22,7 +22,7 @@ class TeamPerformanceScreen extends GetView<TeamPerformanceController> {
       backgroundColor: AppColors.white,
       body: Column(
         children: [
-          const BackButtonTitleHeader(title: 'Team Performance'),
+          const CommonAppBar(title: 'Team Performance'),
           Padding(
             padding: EdgeInsets.fromLTRB(gutter, 30.h, gutter, 12.h),
             child: Obx(
@@ -219,7 +219,6 @@ class _TaskStatusDonutChart extends StatelessWidget {
       (stats.open, AppColors.yellow),
     ].where((s) => s.$1 > 0).toList();
 
-    // No tasks: a single neutral ring instead of an empty chart.
     if (segments.isEmpty) {
       return [
         PieChartSectionData(
