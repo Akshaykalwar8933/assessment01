@@ -1,3 +1,4 @@
+
 name: Build & Release Flutter App
 
 on:
@@ -9,9 +10,9 @@ on:
         required: true
         default: 'v1.0.0'
       release_name:
-        description: 'Release Name (e.g.Apk v1.0.0)'
+        description: 'Release Name (e.g. Apk v1.0.0)'
         required: true
-        default: ‘Apk v1.0.0'
+        default: 'Apk v1.0.0'
 
 permissions:
   contents: write
@@ -26,31 +27,40 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # 2. Set up Java Environment
+      # 2. Set up JDK 17
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '17'
-          cache: 'gradle'
+          cache: gradle
 
-      # 3. Set up Flutter SDK
+      # 3. Set up FVM
+      - name: Set up FVM
+        uses: kuhnroyal/flutter-fvm-config-action@v3
+        id: fvm-config-action
+
+      # 4. Set up Flutter using FVM configuration
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.41.4'
-          channel: 'stable'
+          flutter-version: ${{ steps.fvm-config-action.outputs.FLUTTER_VERSION }}
+          channel: stable
           cache: true
 
-      # 4. Install Dependencies
+      # 5. Install FVM
+      - name: Install FVM
+        run: dart pub global activate fvm
+
+      # 6. Install Dependencies
       - name: Install Dependencies
-        run: flutter pub get
+        run: fvm flutter pub get
 
-      # 6. Build Android APK (Release)
+      # 7. Build Release APK
       - name: Build APK
-        run: flutter build apk --release --no-tree-shake-icons
+        run: fvm flutter build apk --release --no-tree-shake-icons
 
-      # 7. Create GitHub Release & Upload APK
+      # 8. Create GitHub Release & Upload APK
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
