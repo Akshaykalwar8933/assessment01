@@ -5,7 +5,6 @@ import '../entities/task_draft.dart';
 import '../entities/team_member.dart';
 
 abstract interface class TaskRepository {
-
   Future<List<Task>> getTasks();
 
   Future<void> saveTask(Task task);
@@ -13,7 +12,6 @@ abstract interface class TaskRepository {
   Future<List<TaskTemplate>> getTaskTemplates();
 
   Stream<void> watchTaskChanges();
-
 }
 
 abstract interface class TeamRepository {

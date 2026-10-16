@@ -118,27 +118,32 @@ class _AddTaskBottomSheetState extends State<_AddTaskBottomSheet> {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+    // viewInsets lifts the form above the keyboard; SafeArea keeps the
+    // Cancel / Add Task buttons above the gesture or 3-button navigation bar.
     return Padding(
       padding: EdgeInsets.only(bottom: bottomInset),
-      child: Obx(() {
-        if (_controller.isLoadingFormOptions.value) {
-          return SizedBox(
-            height: 240.h,
-            child: const CenteredLoadingIndicator(),
-          );
-        }
-        final loadError = _controller.formOptionsLoadError.value;
-        if (loadError != null) {
-          return SizedBox(
-            height: 320.h,
-            child: ErrorMessageWithRetryButton(
-              message: loadError,
-              onRetry: _controller.loadFormOptions,
-            ),
-          );
-        }
-        return _buildAddTaskForm(context);
-      }),
+      child: SafeArea(
+        top: false,
+        child: Obx(() {
+          if (_controller.isLoadingFormOptions.value) {
+            return SizedBox(
+              height: 240.h,
+              child: const CenteredLoadingIndicator(),
+            );
+          }
+          final loadError = _controller.formOptionsLoadError.value;
+          if (loadError != null) {
+            return SizedBox(
+              height: 320.h,
+              child: ErrorMessageWithRetryButton(
+                message: loadError,
+                onRetry: _controller.loadFormOptions,
+              ),
+            );
+          }
+          return _buildAddTaskForm(context);
+        }),
+      ),
     );
   }
 

@@ -293,4 +293,80 @@ void main() {
       expect(addTaskButton(), findsOneWidget);
     });
   });
+
+  group('bottom sheets stay above the system navigation bar', () {
+    // A 48 px gesture / 3-button navigation bar at the bottom of the screen.
+    const navigationBarHeight = 48.0;
+    const screen = Size(414, 870);
+
+    Future<void> pumpWithNavigationBar(WidgetTester tester) async {
+      tester.view.padding = const FakeViewPadding(
+        bottom: navigationBarHeight * 3,
+      );
+      tester.view.viewPadding = const FakeViewPadding(
+        bottom: navigationBarHeight * 3,
+      );
+      addTearDown(tester.view.resetPadding);
+      addTearDown(tester.view.resetViewPadding);
+      await pumpApp(tester, screen);
+    }
+
+    void expectAboveNavigationBar(WidgetTester tester, Finder button) {
+      expect(button, findsOneWidget);
+      final bottom = tester.getRect(button).bottom;
+      expect(
+        bottom,
+        lessThanOrEqualTo(screen.height - navigationBarHeight),
+        reason: 'button bottom $bottom is hidden behind the navigation bar',
+      );
+    }
+
+    testWidgets('Add Task sheet buttons', (tester) async {
+      await pumpWithNavigationBar(tester);
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pumpAndSettle();
+      final scrollable = find.descendant(
+        of: find.byType(BottomSheet),
+        matching: find.byType(Scrollable),
+      );
+      await tester.drag(scrollable.first, const Offset(0, -1000));
+      await tester.pumpAndSettle();
+      expectAboveNavigationBar(
+        tester,
+        find.widgetWithText(OutlinedButton, 'Cancel'),
+      );
+      expectAboveNavigationBar(
+        tester,
+        find.widgetWithText(FilledButton, 'Add Task'),
+      );
+    });
+
+    testWidgets('Filters sheet buttons', (tester) async {
+      await pumpWithNavigationBar(tester);
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Filters'));
+      await tester.pumpAndSettle();
+      expectAboveNavigationBar(
+        tester,
+        find.widgetWithText(OutlinedButton, 'Reset'),
+      );
+      expectAboveNavigationBar(
+        tester,
+        find.widgetWithText(FilledButton, 'Apply'),
+      );
+    });
+
+    testWidgets('Task details sheet button', (tester) async {
+      await pumpWithNavigationBar(tester);
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(TaskCard).first);
+      await tester.pumpAndSettle();
+      expectAboveNavigationBar(
+        tester,
+        find.widgetWithText(FilledButton, 'Mark as closed'),
+      );
+    });
+  });
 }

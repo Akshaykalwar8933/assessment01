@@ -18,7 +18,6 @@ class DashboardScreen extends GetView<DashboardController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       floatingActionButton: Obx(
         () => controller.session.isAdmin
             ? FloatingActionButton.extended(

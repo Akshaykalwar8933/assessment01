@@ -110,6 +110,39 @@ class _MemberPerformanceCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  SizedBox(width: 8.w),
+                  // Shows the card is tappable and leads to this member's tasks.
+                  Semantics(
+                    button: true,
+                    label: 'View ${performance.member.name}’s tasks',
+                    child: ExcludeSemantics(
+                      child: Container(
+                        padding: EdgeInsets.fromLTRB(10.w, 4.h, 4.w, 4.h),
+                        decoration: BoxDecoration(
+                          color: AppColors.white,
+                          borderRadius: BorderRadius.circular(20.r),
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'View tasks',
+                              style: AppTextStyles.caption.copyWith(
+                                color: AppColors.textPrimary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Icon(
+                              Icons.chevron_right_rounded,
+                              size: 18.r,
+                              color: AppColors.textPrimary,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
               SizedBox(height: 20.h),
