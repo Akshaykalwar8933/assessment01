@@ -60,7 +60,6 @@ void _showSnackbar({
   required IconData icon,
 }) {
   void show() {
-    // No navigator yet (e.g. during startup): nothing to show it on.
     if (Get.key.currentContext == null) return;
     Get.snackbar(
       title,
@@ -76,7 +75,6 @@ void _showSnackbar({
     );
   }
 
-  // Showing an overlay while a frame is being built throws, so defer it.
   if (SchedulerBinding.instance.schedulerPhase ==
       SchedulerPhase.persistentCallbacks) {
     SchedulerBinding.instance.addPostFrameCallback((_) => show());

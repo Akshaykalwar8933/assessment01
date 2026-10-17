@@ -212,43 +212,51 @@ class _TaskStatusDonutChart extends StatelessWidget {
   final TaskStats stats;
   final double size;
 
+  /// Gap between coloured segments, in degrees.
+  static const double _gapDegrees = 8;
+
+  // Gaps are transparent spacer sections rather than fl_chart's
+  // `sectionsSpace`, which cuts them with `Path.combine`; Impeller (the
+  // device renderer) draws any segment larger than half the ring as a
+  // filled wedge after that cut.
   List<PieChartSectionData> _buildChartSections(double thickness) {
+    PieChartSectionData ringSection(
+      double value,
+      Color color, {
+      bool roundedEnds = false,
+    }) => PieChartSectionData(
+      value: value,
+      color: color,
+      radius: thickness,
+      showTitle: false,
+      cornerRadius: roundedEnds ? thickness / 2 : 0,
+    );
+
     final segments = [
       (stats.overdue, AppColors.red),
       (stats.closed, AppColors.green),
       (stats.open, AppColors.yellow),
     ].where((s) => s.$1 > 0).toList();
 
-    if (segments.isEmpty) {
-      return [
-        PieChartSectionData(
-          value: 1,
-          color: AppColors.border,
-          radius: thickness,
-          showTitle: false,
-        ),
-      ];
+    if (segments.isEmpty) return [ringSection(1, AppColors.border)];
+    if (segments.length == 1) {
+      return [ringSection(segments.single.$1.toDouble(), segments.single.$2)];
     }
+
+    final total = segments.fold<int>(0, (sum, s) => sum + s.$1);
+    final gapValue =
+        total * _gapDegrees / (360 - segments.length * _gapDegrees);
     return [
-      for (final (value, color) in segments)
-        PieChartSectionData(
-          value: value.toDouble(),
-          color: color,
-          radius: thickness,
-          showTitle: false,
-          cornerRadius: segments.length > 1 ? thickness / 2 : 0,
-        ),
+      for (final (value, color) in segments) ...[
+        ringSection(value.toDouble(), color, roundedEnds: true),
+        ringSection(gapValue, Colors.transparent),
+      ],
     ];
   }
 
   @override
   Widget build(BuildContext context) {
     final thickness = size * 0.05;
-    final segmentCount = [
-      stats.overdue,
-      stats.closed,
-      stats.open,
-    ].where((v) => v > 0).length;
     return Semantics(
       label:
           '${stats.total} tasks: ${stats.open} open, ${stats.overdue} overdue, '
@@ -261,9 +269,10 @@ class _TaskStatusDonutChart extends StatelessWidget {
             PieChart(
               PieChartData(
                 sections: _buildChartSections(thickness),
-                startDegreeOffset: 270,
+                // Centre the first gap at the top of the ring.
+                startDegreeOffset: 270 + _gapDegrees / 2,
                 centerSpaceRadius: size / 2 - thickness,
-                sectionsSpace: segmentCount > 1 ? thickness * 1.6 : 0,
+                sectionsSpace: 0,
                 pieTouchData: PieTouchData(enabled: false),
               ),
               duration: const Duration(milliseconds: 300),

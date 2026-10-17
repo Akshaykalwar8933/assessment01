@@ -5,7 +5,7 @@ import '../../presentation/screens/team_performance/team_performance_screen.dart
 import '../../presentation/screens/team_tasks/team_tasks_screen.dart';
 import 'app_routes.dart';
 
-abstract final class AppPages {
+ class AppPages {
   static const String initial = AppRoutes.dashboard;
 
   static final List<GetPage<dynamic>> routes = [
